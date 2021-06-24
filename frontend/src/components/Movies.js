@@ -2,16 +2,13 @@ import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 
 export default class Movies extends Component {
-    state = { movies: [] };
+    state = { 
+        movies: [] ,
+        isLoaded: false
+    };
 
     componentDidMount() {
-        this.setState({
-            movies: [
-                {id:1, title: "The Shawshank Redemption", runtime: 160},
-                {id:2, title: "The Matrix", runtime: 170},
-                {id:3, title: "The Haunting", runtime: 152},
-            ]
-        })
+        fetch("http://localhost:4000/v1/")
     }
 
     render() {

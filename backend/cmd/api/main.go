@@ -3,12 +3,17 @@ package main
 import (
 	"backend/internal/config"
 	"backend/internal/handler"
+	"backend/internal/repository/postgres"
+	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 var (
@@ -16,6 +21,7 @@ var (
 	idleTimeout  = time.Minute
 	readTimeout  = 5 * time.Second
 	writeTimeout = 5 * time.Second
+	dbTimeout    = 5 * time.Second
 )
 
 func main() {
@@ -25,12 +31,21 @@ func main() {
 	flag.IntVar(&cfg.Port, "port", 4000, "backend server port to listen on")
 	flag.StringVar(&cfg.Env, "env", "development", "Application environment (development|production")
 	flag.StringVar(&cfg.Version, "version", "1.0.0", "Application version")
+	flag.StringVar(&cfg.DB.DSN, "db_dsn", "postgres://rasyad@localhost:5432/go_movies?sslmode=disable", "DB connection string")
+	flag.StringVar(&cfg.DB.Driver, "db_driver", "postgres", "DB Driver (postgres|mysql etc)")
 	flag.Parse()
 
 	cfg.Logger = log.New(os.Stdout, "INFO:", log.Ldate|log.Ltime)
 
-	r := handler.Initialize(&cfg)
-	handler.New(r)
+	db, err := openDB(cfg)
+	if err != nil {
+		cfg.Logger.Fatalln(err)
+	}
+	defer db.Close()
+
+	r := postgres.New(db)
+	h := handler.Initialize(&cfg, r)
+	handler.New(h)
 
 	s := http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Port),
@@ -46,4 +61,18 @@ func main() {
 		cfg.Logger.Fatal(err)
 	}
 
+}
+
+func openDB(cfg config.Application) (*sql.DB, error) {
+	db, err := sql.Open(cfg.DB.Driver, cfg.DB.DSN)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	if err := db.PingContext(ctx); err != nil {
+		return nil, err
+	}
+	return db, nil
 }

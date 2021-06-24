@@ -7,4 +7,8 @@ type Application struct {
 	Env     string
 	Logger  *log.Logger
 	Version string
+	DB      struct {
+		Driver string
+		DSN    string
+	}
 }

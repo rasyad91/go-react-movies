@@ -7,9 +7,13 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func route() *httprouter.Router {
+func route() http.Handler {
 	router := httprouter.New()
 	router.HandlerFunc(http.MethodGet, "/status", handler.Repo.Status)
 
-	return router
+	router.HandlerFunc(http.MethodGet, "/v1/movies", handler.Repo.GetAllMovies)
+	// :id because of julienschmidt package
+	router.HandlerFunc(http.MethodGet, "/v1/movies/:id", handler.Repo.GetMovie)
+
+	return enableCORS(router)
 }
