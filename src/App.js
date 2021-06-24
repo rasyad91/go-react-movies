@@ -1,25 +1,75 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { HashRouter as Router, Switch, Route, Link } from 'react-router-dom'
 
-function App() {
+
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="container">
+        <div className="row">
+          <h1 className="mt-3">
+            Go Watch a Movie
+        </h1>
+          <hr className="mb-3"></hr>
+        </div>
+
+        <div className="row">
+          <div className="col-md-2">
+            <nav>
+              <ul className="list-group">
+                <li className="list-group-item">
+                  {/* <a href="/">Home</a> */}
+                  <Link to="/">Home</Link>
+
+                </li>
+                <li className="list-group-item">
+                  <Link to="/movies">Movies</Link>
+                </li>
+                <li className="list-group-item">
+                  <Link to="/admin">Manage Cataloge</Link>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          <div className="col-md-10">
+            <Switch>
+
+              <Route path="/movies">
+                <Movies />
+              </Route>
+
+              <Route path="/admin">
+                <Admin />
+              </Route>
+
+              <Route path="/">
+                <Home />
+              </Route>
+
+            </Switch>
+          </div>
+        </div>
+      </div>
+    </Router>
+
   );
 }
 
-export default App;
+function Home() {
+  return (
+    <h2>Home here</h2>
+  )
+}
+
+function Admin() {
+  return (
+    <h2>Admin</h2>
+  )
+}
+
+function Movies() {
+  return (
+    <h2>Movies</h2>
+  )
+}
