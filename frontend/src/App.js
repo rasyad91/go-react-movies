@@ -1,11 +1,14 @@
 import React from 'react';
-import { HashRouter as Router, Switch, Route, Link, useParams, useRouteMatch } from 'react-router-dom'
+import { HashRouter as Router, Switch, Route, Link } from 'react-router-dom'
 
 import Admin from './components/Admin';
+import Genres from './components/Genres';
 import Home from './components/Home';
 import Movies from './components/Movies';
-import Categories from './components/Categories';
 import ShowOneMovie from './components/ShowOneMovie';
+import MoviesByGenre from './components/MoviesByGenre';
+import EditMovie from './components/EditMovie';
+
 
 
 
@@ -34,7 +37,11 @@ export default function App() {
                 </li>
 
                 <li className="list-group-item">
-                  <Link to="/categories">By Category</Link>
+                  <Link to="/genres">Genres</Link>
+                </li>
+
+                <li className="list-group-item">
+                  <Link to="/admin/movies/0">Add movie</Link>
                 </li>
 
                 <li className="list-group-item">
@@ -55,14 +62,15 @@ export default function App() {
                 <Movies />
               </Route>
 
-              <Route exact path="/categories">
-                <Category />
+
+              <Route path="/genres/:id" component={MoviesByGenre}>
+              </Route>
+              <Route exact path="/genres">
+                <Genres />
               </Route>
 
-              <Route exact path="/categories/drama" render={(props) => <Categories {...props} title={"Drama"} />}/>
-              <Route exact path="/categories/comedy" render={(props) => <Categories {...props} title={"Comedy"} />}/>
-
-              
+              <Route path="/admin/movies/:id" component={EditMovie}>
+              </Route>
 
               <Route path="/admin">
                 <Admin />
@@ -79,28 +87,4 @@ export default function App() {
     </Router>
 
   );
-}
-
-function Category() {
-  let { path, url } = useRouteMatch();
-
-  return(
-      <div>
-        <h2>Categories</h2>
-        <ul>
-          <li>
-            <Link to={`${path}/drama`}>Drama path</Link>
-          </li>
-          <li>
-            <Link to={`${url}/drama`}>Drama url</Link>
-          </li>
-          <li>
-            <Link to={`${path}/comedy`}>Comedy</Link>
-          </li>
-          <li>
-            <Link to={`${path}/horror`}>Horror</Link>
-          </li>
-        </ul>
-      </div>
-  )
 }

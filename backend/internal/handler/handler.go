@@ -8,8 +8,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -69,7 +72,7 @@ func (m *Repository) GetMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := util.WriteJSON(w, movie); err != nil {
+	if err := util.WriteJSON(w, "movie", movie); err != nil {
 		m.App.Logger.Println(err)
 	}
 
@@ -88,12 +91,93 @@ func (m *Repository) GetAllMovies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := util.WriteJSON(w, movies); err != nil {
+	if err := util.WriteJSON(w, "movies", movies); err != nil {
 		m.App.Logger.Println(err)
 	}
 }
 
+func (m *Repository) GetAllMoviesByGenre(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	id, err := strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		m.App.Logger.Println(errors.New("invalid id parameter"))
+		util.ErrorJSON(w, err)
+		return
+	}
+	movies, err := m.DB.GetAllMovies(id)
+	if err == sql.ErrNoRows {
+		m.App.Logger.Println(errors.New("no movie found"))
+		util.ErrorJSON(w, err)
+		return
+	}
+	if err != nil {
+		m.App.Logger.Println(err)
+		util.ErrorJSON(w, err)
+		return
+	}
+
+	if err := util.WriteJSON(w, "movies", movies); err != nil {
+		m.App.Logger.Println(err)
+	}
+}
+
+func (m *Repository) GetAllGenres(w http.ResponseWriter, r *http.Request) {
+	genres, err := m.DB.GetAllGenres()
+	if err == sql.ErrNoRows {
+		m.App.Logger.Println(errors.New("no genres found"))
+		util.ErrorJSON(w, err)
+		return
+	}
+	if err != nil {
+		m.App.Logger.Println(err)
+		util.ErrorJSON(w, err)
+		return
+	}
+
+	if err := util.WriteJSON(w, "genres", genres); err != nil {
+		m.App.Logger.Println(err)
+	}
+}
+
+type jsonResp struct {
+	OK      bool   `json:"ok"`
+	Message string `json:"message"`
+}
+
+func (m *Repository) AddMovie(w http.ResponseWriter, r *http.Request) {
+	var payload model.MoviePayload
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		m.App.Logger.Println(err)
+		util.ErrorJSON(w, err)
+		return
+	}
+
+	var movie model.Movie
+	movie.ID, _ = strconv.Atoi(payload.ID)
+	movie.Title = payload.Title
+	movie.Description = payload.Description
+	movie.MPAARating = payload.MPAARating
+	movie.ReleaseDate, _ = time.Parse("2006-01-02", payload.ReleaseDate)
+	movie.Year = movie.ReleaseDate.Year()
+	movie.Runtime, _ = strconv.Atoi(payload.Runtime)
+	movie.Rating, _ = strconv.Atoi(payload.Rating)
+
+	log.Println(movie)
+	if err := m.DB.InsertMovie(movie); err != nil {
+		fmt.Println(err)
+		util.ErrorJSON(w, err)
+		return
+	}
+
+	resp := jsonResp{OK: true}
+	if err := util.WriteJSON(w, "response", resp); err != nil {
+		m.App.Logger.Println(err)
+		util.ErrorJSON(w, err)
+		return
+	}
+
+}
+
 func (m *Repository) DeleteMovie(w http.ResponseWriter, r *http.Request)  {}
-func (m *Repository) InsertMovie(w http.ResponseWriter, r *http.Request)  {}
-func (m *Repository) UpdateMovie(w http.ResponseWriter, r *http.Request)  {}
 func (m *Repository) SearchMovies(w http.ResponseWriter, r *http.Request) {}

@@ -19,11 +19,22 @@ type Movie struct {
 	MPAARating  string         `json:"mpaa_rating"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
-	Genre       map[int]string `json:"genre"`
+	Genres      map[int]string `json:"genres"`
+}
+
+type MoviePayload struct {
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Year        string `json:"year"`
+	ReleaseDate string `json:"release_date"`
+	Runtime     string `json:"runtime"`
+	Rating      string `json:"rating"`
+	MPAARating  string `json:"mpaa_rating"`
 }
 
 type Genre struct {
-	ID        int       `json:"-"`
+	ID        int       `json:"id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`

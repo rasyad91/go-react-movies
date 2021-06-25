@@ -5,11 +5,12 @@ export default class Movies extends Component {
     state = {
         movies: [],
         isLoaded: false,
+        genreName: "",
         error: null
     };
 
     componentDidMount() {
-        fetch("http://localhost:4000/v1/movies")
+        fetch("http://localhost:4000/v1/genres/" + this.props.match.params.id)
             .then(res => {
                 if (res.status !== 200) {
                     let err = Error;
@@ -21,7 +22,8 @@ export default class Movies extends Component {
             .then(data => (
                 this.setState({
                     movies: data.movies,
-                    isLoaded: true
+                    isLoaded: true,
+                    genreName: this.props.location.genreName
                 },
                     error => {
                         this.setState({
@@ -33,12 +35,13 @@ export default class Movies extends Component {
     }
 
     render() {
-        const { movies, isLoaded, error } = this.state
+        let { movies, isLoaded, error, genreName } = this.state
         if (error) return <p>Error: {error.message}</p>
         if (!isLoaded) return <p>Loading...</p>
+        if (!movies) { movies = [] }
         return (
             <Fragment>
-                <h2>Choose a movie</h2>
+                <h2>Genre: {genreName}</h2>
                 <div className="list-group">
                     {movies.map(m => (
                         <Link key={m.id} className="list-group-item list-group-item-action" to={`/movies/${m.id}`}>{m.title}</Link>

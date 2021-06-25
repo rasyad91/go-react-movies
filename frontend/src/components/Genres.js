@@ -1,15 +1,16 @@
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
-export default class Movies extends Component {
+export default class Genres extends Component {
+
     state = {
-        movies: [],
+        genres: [],
         isLoaded: false,
         error: null
-    };
+    }
 
     componentDidMount() {
-        fetch("http://localhost:4000/v1/movies")
+        fetch("http://localhost:4000/v1/genres")
             .then(res => {
                 if (res.status !== 200) {
                     let err = Error;
@@ -20,7 +21,7 @@ export default class Movies extends Component {
             })
             .then(data => (
                 this.setState({
-                    movies: data.movies,
+                    genres: data.genres,
                     isLoaded: true
                 },
                     error => {
@@ -33,16 +34,26 @@ export default class Movies extends Component {
     }
 
     render() {
-        const { movies, isLoaded, error } = this.state
+        const { genres, isLoaded, error } = this.state
         if (error) return <p>Error: {error.message}</p>
         if (!isLoaded) return <p>Loading...</p>
+
         return (
             <Fragment>
-                <h2>Choose a movie</h2>
+                <h2>Genres</h2>
                 <div className="list-group">
-                    {movies.map(m => (
-                        <Link key={m.id} className="list-group-item list-group-item-action" to={`/movies/${m.id}`}>{m.title}</Link>
+                    {genres.map(g => (
+                        <Link
+                            key={g.id}
+                            className="list-group-item list-group-item-active"
+                            to={{
+                                pathname: `/genres/${g.id}`,
+                                genreName: g.name
+                            }}>
+                            {g.name}
+                        </Link>
                     ))}
+
                 </div>
             </Fragment>
         );
