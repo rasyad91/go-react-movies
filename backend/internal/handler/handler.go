@@ -71,7 +71,6 @@ func (m *Repository) GetMovie(w http.ResponseWriter, r *http.Request) {
 		util.ErrorJSON(w, err)
 		return
 	}
-
 	if err := util.WriteJSON(w, "movie", movie); err != nil {
 		m.App.Logger.Println(err)
 	}
@@ -152,9 +151,15 @@ func (m *Repository) AddMovie(w http.ResponseWriter, r *http.Request) {
 		util.ErrorJSON(w, err)
 		return
 	}
-
 	var movie model.Movie
-	movie.ID, _ = strconv.Atoi(payload.ID)
+
+	id, _ := strconv.Atoi(payload.ID)
+
+	if id != 0 {
+		m, _ := m.DB.GetMovieByID(id)
+		movie = m
+	}
+
 	movie.Title = payload.Title
 	movie.Description = payload.Description
 	movie.MPAARating = payload.MPAARating
@@ -164,10 +169,18 @@ func (m *Repository) AddMovie(w http.ResponseWriter, r *http.Request) {
 	movie.Rating, _ = strconv.Atoi(payload.Rating)
 
 	log.Println(movie)
-	if err := m.DB.InsertMovie(movie); err != nil {
-		fmt.Println(err)
-		util.ErrorJSON(w, err)
-		return
+	if movie.ID == 0 {
+		if err := m.DB.InsertMovie(movie); err != nil {
+			fmt.Println(err)
+			util.ErrorJSON(w, err)
+			return
+		}
+	} else {
+		if err := m.DB.UpdateMovie(movie); err != nil {
+			fmt.Println(err)
+			util.ErrorJSON(w, err)
+			return
+		}
 	}
 
 	resp := jsonResp{OK: true}
@@ -179,5 +192,23 @@ func (m *Repository) AddMovie(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (m *Repository) DeleteMovie(w http.ResponseWriter, r *http.Request)  {}
+func (m *Repository) DeleteMovie(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	id, err := strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		m.App.Logger.Println(errors.New("invalid id parameter"))
+		util.ErrorJSON(w, err)
+		return
+	}
+	if err := m.DB.DeleteMovie(id); err != nil {
+		m.App.Logger.Println(err)
+		util.ErrorJSON(w, err)
+		return
+	}
+
+	resp := jsonResp{OK: true}
+	if err := util.WriteJSON(w, "response", resp); err != nil {
+		m.App.Logger.Println(err)
+	}
+}
 func (m *Repository) SearchMovies(w http.ResponseWriter, r *http.Request) {}

@@ -187,3 +187,49 @@ func (m *dbRepo) InsertMovie(movie model.Movie) error {
 
 	return nil
 }
+
+func (m *dbRepo) UpdateMovie(movie model.Movie) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `UPDATE movies
+			  SET 	title = $1, 
+			  		description = $2, 
+					year = $3, 
+					release_date = $4, 
+					runtime = $5, 
+					rating = $6, 
+					mpaa_rating = $7,
+					updated_at = $8
+			  WHERE id = $9
+			  `
+	if _, err := m.ExecContext(ctx, query,
+		movie.Title,
+		movie.Description,
+		movie.Year,
+		movie.ReleaseDate,
+		movie.Runtime,
+		movie.Rating,
+		movie.MPAARating,
+		time.Now(),
+		movie.ID,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *dbRepo) DeleteMovie(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `DELETE FROM movies
+			  WHERE id = $1
+			  `
+	if _, err := m.ExecContext(ctx, query, id); err != nil {
+		return err
+	}
+
+	return nil
+}

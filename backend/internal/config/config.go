@@ -11,4 +11,7 @@ type Application struct {
 		Driver string
 		DSN    string
 	}
+	JWT struct {
+		Secret string
+	}
 }
