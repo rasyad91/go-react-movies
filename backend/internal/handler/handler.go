@@ -219,6 +219,7 @@ func (m *Repository) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 	resp := jsonResp{OK: true}
 	if err := util.WriteJSON(w, "response", resp); err != nil {
 		m.App.Logger.Println(err)
+
 	}
 }
 func (m *Repository) SearchMovies(w http.ResponseWriter, r *http.Request) {}

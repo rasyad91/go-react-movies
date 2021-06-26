@@ -24,6 +24,9 @@ func route() http.Handler {
 	router := httprouter.New()
 	secure := alice.New(checkToken)
 
+	// graphql => uses post method
+	router.HandlerFunc(http.MethodPost, "/v1/graphql/list", handler.Repo.ListMovies)
+
 	router.HandlerFunc(http.MethodGet, "/status", handler.Repo.Status)
 	router.HandlerFunc(http.MethodPost, "/v1/signin", handler.Repo.Signin)
 
