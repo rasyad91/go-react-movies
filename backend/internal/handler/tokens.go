@@ -39,7 +39,13 @@ func (m *Repository) Signin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var claims jwt.Claims
+	claims := jwt.Claims{
+		Registered: jwt.Registered{},
+		Set:        map[string]interface{}{},
+		Raw:        []byte{},
+		RawHeader:  []byte{},
+		KeyID:      "",
+	}
 	claims.Subject = fmt.Sprint(validUser.ID)
 	claims.Issued = jwt.NewNumericTime(time.Now())
 	claims.NotBefore = jwt.NewNumericTime(time.Now())
@@ -54,7 +60,7 @@ func (m *Repository) Signin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := util.WriteJSON(w, "response", jwtBytes); err != nil {
+	if err := util.WriteJSON(w, "response", string(jwtBytes)); err != nil {
 		m.App.Logger.Println(err)
 		util.ErrorJSON(w, err)
 		return

@@ -62,13 +62,11 @@ export default class EditMovie extends Component {
         console.log("Form was submittd");
         const data = new FormData(e.target);
         const payload = Object.fromEntries(data.entries());
-        console.log(payload)
 
         const requestOptions = {
             method: "POST",
             body: JSON.stringify(payload)
         }
-        console.log("reqoptions: ", requestOptions)
         fetch("http://localhost:4000/v1/admin/addMovie", requestOptions)
             .then(res => res.json())
             .then(data => {
@@ -167,7 +165,7 @@ export default class EditMovie extends Component {
         return (
             <Fragment>
                 <h2>Edit/Add movie</h2>
-                <Alert alertType={this.state.alert.type} alertMessage={this.state.alert.message} />
+                <Alert type={this.state.alert.type} message={this.state.alert.message} />
 
 
                 <form onSubmit={this.handleSubmit}>

@@ -26,11 +26,16 @@ func ErrorJSON(w http.ResponseWriter, err error) {
 		Message string `json:"message"`
 		Status  int    `json:"status"`
 	}
+	wrapper := make(map[string]interface{})
+	wrapper["error"] = jsonError{
+		Message: err.Error(),
+		Status:  http.StatusBadRequest,
+	}
 
 	enc := json.NewEncoder(w)
 	w.Header().Set("Content-Type", "application-json")
-	w.WriteHeader(http.StatusInternalServerError)
-	if err := enc.Encode(jsonError{Message: err.Error(), Status: http.StatusBadRequest}); err != nil {
+	w.WriteHeader(http.StatusBadRequest)
+	if err := enc.Encode(wrapper); err != nil {
 		w.WriteHeader(http.StatusBadGateway)
 	}
 }
