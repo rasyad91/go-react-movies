@@ -53,6 +53,9 @@ func (m *Repository) Status(w http.ResponseWriter, r *http.Request) {
 
 func (m *Repository) GetMovie(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+	fmt.Println("Getmovie ctx:", r.Context())
+	fmt.Println("Getmovie params:", params)
+
 	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil {
 		m.App.Logger.Println(errors.New("invalid id parameter"))
@@ -97,6 +100,7 @@ func (m *Repository) GetAllMovies(w http.ResponseWriter, r *http.Request) {
 
 func (m *Repository) GetAllMoviesByGenre(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
 	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil {
 		m.App.Logger.Println(errors.New("invalid id parameter"))
@@ -193,7 +197,13 @@ func (m *Repository) AddMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) DeleteMovie(w http.ResponseWriter, r *http.Request) {
-	params := httprouter.ParamsFromContext(r.Context())
+	fmt.Println(r.URL.String())
+	// params := httprouter.ParamsFromContext(r.Context())
+	params := r.Context().Value("params").(httprouter.Params)
+	fmt.Println("Deletemovie ctx:", r.Context())
+
+	fmt.Println("deletemovie params:", params)
+
 	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil {
 		m.App.Logger.Println(errors.New("invalid id parameter"))

@@ -26,15 +26,11 @@ func enableCORS(next http.Handler) http.Handler {
 
 func checkToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("Before adding Vary, Authorization: %#v\n", w.Header())
 		w.Header().Add("Vary", "Authorization")
 		authHeader := r.Header.Get("Authorization")
-
 		if authHeader == "" {
-			// could set an anonymous user
+			fmt.Println("empty authHeader")
 		}
-
-		fmt.Printf("After adding vary authorization: %#v\n", w.Header())
 
 		headerParts := strings.Split(authHeader, " ")
 		if len(headerParts) != 2 {
@@ -50,28 +46,28 @@ func checkToken(next http.Handler) http.Handler {
 		token := headerParts[1]
 		claims, err := jwt.HMACCheck([]byte(token), []byte(cfg.JWT.Secret))
 		if err != nil {
-			util.ErrorJSON(w, errors.New("unauthorized - failed hmac check"))
+			util.ErrorJSON(w, errors.New("unauthorized - failed hmac check"), http.StatusForbidden)
 			return
 		}
 
 		if !claims.Valid(time.Now()) {
-			util.ErrorJSON(w, errors.New("unauthorized - token expired"))
+			util.ErrorJSON(w, errors.New("unauthorized - token expired"), http.StatusForbidden)
 			return
 		}
 
 		if !claims.AcceptAudience("mydomain.com") {
-			util.ErrorJSON(w, errors.New("unauthorized - invalid audience"))
+			util.ErrorJSON(w, errors.New("unauthorized - invalid audience"), http.StatusForbidden)
 			return
 		}
 
 		if claims.Issuer != "mydomain.com" {
-			util.ErrorJSON(w, errors.New("unauthorized - invalid issuer"))
+			util.ErrorJSON(w, errors.New("unauthorized - invalid issuer"), http.StatusForbidden)
 			return
 		}
 
 		userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 		if err != nil {
-			util.ErrorJSON(w, errors.New("unauthorized"))
+			util.ErrorJSON(w, errors.New("unauthorized"), http.StatusForbidden)
 			return
 		}
 		log.Println(userID)

@@ -25,12 +25,21 @@ export default class App extends Component {
 
   }
 
+  componentDidMount() {
+    let t = window.localStorage.getItem("jwt") 
+    if (t) {
+      this.setState({jwt: JSON.parse(t)})
+    }
+  } 
+
   handleJWTChange = jwt => {
     this.setState({ jwt: jwt });
   }
 
   logout = () => {
     this.setState({ jwt: "" })
+    window.localStorage.removeItem("jwt")
+
   }
 
   render() {
@@ -90,7 +99,9 @@ export default class App extends Component {
 
             <div className="col-md-10">
               <Switch>
-                <Route path="/login" component={props => <Login {...props} handleJWTChange={this.handleJWTChange}/>}/>
+                <Route path="/login" component={props => (
+                  <Login {...props} handleJWTChange={this.handleJWTChange} />)}
+                />
 
                 <Route path="/movies/:id" component={ShowOneMovie}>
                 </Route>
@@ -106,11 +117,14 @@ export default class App extends Component {
                   <Genres />
                 </Route>
 
-                <Route path="/admin/movies/:id" component={EditMovie}>
+                <Route path="/admin/movies/:id" component={props => (
+                  <EditMovie {...props} jwt={this.state.jwt}/>
+                )}>
                 </Route>
 
-                <Route path="/admin">
-                  <Admin />
+                <Route path="/admin" component={props => (
+                  <Admin {...props} jwt={this.state.jwt}/>
+                )}>
                 </Route>
 
                 <Route exact path="/">

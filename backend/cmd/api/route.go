@@ -3,6 +3,7 @@ package main
 import (
 	"backend/internal/handler"
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -11,8 +12,11 @@ import (
 
 func wrap(next http.Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		ctx := context.WithValue(r.Context(), "params", p)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		ctx := context.WithValue(r.Context(), httprouter.ParamsKey, p)
+		fmt.Println("wrap:", p)
+		fmt.Printf("ctx: %#v\n", ctx)
+
+		next.ServeHTTP(w, r)
 	}
 }
 
@@ -30,10 +34,11 @@ func route() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/v1/genres", handler.Repo.GetAllGenres)
 	router.HandlerFunc(http.MethodGet, "/v1/genres/:id", handler.Repo.GetAllMoviesByGenre)
 
-	router.POST("/v1/admin/editMovie", wrap(secure.ThenFunc(handler.Repo.AddMovie)))
-	router.HandlerFunc(http.MethodPost, "/v1/admin/addMovie", handler.Repo.AddMovie)
+	router.POST("/v1/admin/addMovie", wrap(secure.ThenFunc(handler.Repo.AddMovie)))
+	// router.HandlerFunc(http.MethodPost, "/v1/admin/addMovie", handler.Repo.AddMovie)
 
-	router.HandlerFunc(http.MethodGet, "/v1/admin/deleteMovie/:id", handler.Repo.DeleteMovie)
+	router.GET("/v1/admin/deleteMovie/:id", wrap(secure.ThenFunc(handler.Repo.DeleteMovie)))
+	// router.HandlerFunc(http.MethodGet, "/v1/admin/deleteMovie/:id", handler.Repo.DeleteMovie)
 
 	return enableCORS(router)
 }

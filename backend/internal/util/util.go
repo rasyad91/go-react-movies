@@ -21,7 +21,12 @@ func WriteJSON(w http.ResponseWriter, wrap string, v interface{}) error {
 	return nil
 }
 
-func ErrorJSON(w http.ResponseWriter, err error) {
+func ErrorJSON(w http.ResponseWriter, err error, status ...int) {
+	statusCode := http.StatusBadRequest
+	if len(status) != 0 {
+		statusCode = status[0]
+	}
+
 	type jsonError struct {
 		Message string `json:"message"`
 		Status  int    `json:"status"`
@@ -29,13 +34,14 @@ func ErrorJSON(w http.ResponseWriter, err error) {
 	wrapper := make(map[string]interface{})
 	wrapper["error"] = jsonError{
 		Message: err.Error(),
-		Status:  http.StatusBadRequest,
+		Status:  statusCode,
 	}
 
 	enc := json.NewEncoder(w)
 	w.Header().Set("Content-Type", "application-json")
-	w.WriteHeader(http.StatusBadRequest)
+	w.WriteHeader(statusCode)
+
 	if err := enc.Encode(wrapper); err != nil {
-		w.WriteHeader(http.StatusBadGateway)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
