@@ -23,6 +23,7 @@ export default class EditMovie extends Component {
                 runtime: 0,
                 rating: 0,
                 mpaa_rating: "",
+                poster: "",
             },
             mpaaOptions: [
                 { id: "G", value: "G" },
@@ -98,7 +99,7 @@ export default class EditMovie extends Component {
             }
         }))
         console.log(this.state.movie)
-        
+
     }
 
     confirmDelete = e => {
@@ -120,7 +121,7 @@ export default class EditMovie extends Component {
                             {
                                 method: "GET",
                                 headers: requestHeader
-                            } 
+                            }
                         )
                             .then(res => res.json())
                             .then(data => {
@@ -239,6 +240,16 @@ export default class EditMovie extends Component {
                         value={movie.mpaa_rating}
                         handleChange={this.handleChange}
                         placeholder="Choose.."
+                    />
+                    <InputText
+                        title="Poster"
+                        className={this.hasError("poster") ? "is-invalid" : ""}
+                        errorDiv={this.hasError("poster") ? "text-danger" : "d-none"}
+                        errorMsg={this.hasError("poster") ? "Poster required" : ""}
+                        type="text"
+                        name="poster"
+                        value={movie.poster}
+                        handleChange={this.handleChange}
                     />
                     <InputText
                         title="Rating"
