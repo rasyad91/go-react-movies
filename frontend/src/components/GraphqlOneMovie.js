@@ -18,6 +18,7 @@ export default class GraphqlOneMovie extends Component {
                 description
                 rating
                 mpaa_rating
+                poster
             }
         }
         `
@@ -29,7 +30,7 @@ export default class GraphqlOneMovie extends Component {
             headers: header,
             body: payload,
         }
-        fetch("http://localhost:4000/v1/graphql", requestOptions)
+        fetch(`${process.env.REACT_APP_API_URL}/v1/graphql`, requestOptions)
             .then(res => res.json())
             .then(data => {
                 this.setState({movie: data.data.movie, isLoaded: true})
@@ -49,6 +50,11 @@ export default class GraphqlOneMovie extends Component {
         return (
             <Fragment>
                 <h2>Movie: {movie.title} ({movie.year})</h2>
+                {movie.poster !== "" && (
+                    <div>
+                        <img src={`https://image.tmdb.org/t/p/w200${movie.poster}`} alt="poster"></img>
+                    </div>
+                )}
                 <div className="float-start">
                     <small>Rating: {movie.mpaa_rating}</small>
                 </div>

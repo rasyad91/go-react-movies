@@ -203,7 +203,7 @@ func (m *dbRepo) UpdateMovie(movie model.Movie) error {
 					runtime = $5, 
 					rating = $6, 
 					mpaa_rating = $7,
-					updated_at = $8
+					updated_at = $8,
 					poster = $9
 			  WHERE id = $10
 			  `
@@ -215,7 +215,6 @@ func (m *dbRepo) UpdateMovie(movie model.Movie) error {
 		movie.Runtime,
 		movie.Rating,
 		movie.MPAARating,
-		time.Now(),
 		time.Now(),
 		movie.Poster,
 		movie.ID,

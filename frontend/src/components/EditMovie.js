@@ -73,7 +73,7 @@ export default class EditMovie extends Component {
             body: JSON.stringify(payload),
             headers: requestHeader
         }
-        fetch("http://localhost:4000/v1/admin/addMovie", requestOptions)
+        fetch(`${process.env.REACT_APP_API_URL}/v1/admin/addMovie`, requestOptions)
             .then(res => res.json())
             .then(data => {
                 if (data.error) { this.setState({ alert: { type: "alert-danger", message: data.error.message } }) }
@@ -116,7 +116,7 @@ export default class EditMovie extends Component {
                         const requestHeader = new Headers();
                         requestHeader.append("Content-Type", "application/json")
                         requestHeader.append("Authorization", "Bearer " + this.props.jwt)
-                        fetch("http://localhost:4000/v1/admin/deleteMovie/"
+                        fetch(`${process.env.REACT_APP_API_URL}/v1/admin/deleteMovie/`
                             + this.state.movie.id,
                             {
                                 method: "GET",
@@ -149,7 +149,7 @@ export default class EditMovie extends Component {
         const id = this.props.match.params.id;
         console.log("id: ", id)
         if (id != 0) {
-            fetch("http://localhost:4000/v1/movies/" + id)
+            fetch(`${process.env.REACT_APP_API_URL}/v1/movies/` + id)
                 .then(res => {
                     if (res.status !== 200) {
                         let err = Error;
@@ -243,9 +243,9 @@ export default class EditMovie extends Component {
                     />
                     <InputText
                         title="Poster"
-                        className={this.hasError("poster") ? "is-invalid" : ""}
-                        errorDiv={this.hasError("poster") ? "text-danger" : "d-none"}
-                        errorMsg={this.hasError("poster") ? "Poster required" : ""}
+                        // className={this.hasError("poster") ? "is-invalid" : ""}
+                        // errorDiv={this.hasError("poster") ? "text-danger" : "d-none"}
+                        // errorMsg={this.hasError("poster") ? "Poster required" : ""}
                         type="text"
                         name="poster"
                         value={movie.poster}

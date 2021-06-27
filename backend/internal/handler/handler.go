@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -53,7 +54,6 @@ func (m *Repository) Status(w http.ResponseWriter, r *http.Request) {
 
 func (m *Repository) GetMovie(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
-	fmt.Println("Getmovie ctx:", r.Context())
 	fmt.Println("Getmovie params:", params)
 
 	id, err := strconv.Atoi(params.ByName("id"))
@@ -74,6 +74,14 @@ func (m *Repository) GetMovie(w http.ResponseWriter, r *http.Request) {
 		util.ErrorJSON(w, err)
 		return
 	}
+
+	if movie.Poster == "" {
+		fmt.Println("Get movie Poster")
+		movie = getPoster(movie)
+		fmt.Println("Return from movie Poster")
+
+	}
+
 	if err := util.WriteJSON(w, "movie", movie); err != nil {
 		m.App.Logger.Println(err)
 	}
@@ -172,6 +180,10 @@ func (m *Repository) AddMovie(w http.ResponseWriter, r *http.Request) {
 	movie.Runtime, _ = strconv.Atoi(payload.Runtime)
 	movie.Rating, _ = strconv.Atoi(payload.Rating)
 
+	if movie.Poster == "" {
+		movie = getPoster(movie)
+	}
+
 	log.Println(movie)
 	if movie.ID == 0 {
 		if err := m.DB.InsertMovie(movie); err != nil {
@@ -222,4 +234,76 @@ func (m *Repository) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
-func (m *Repository) SearchMovies(w http.ResponseWriter, r *http.Request) {}
+
+func getPoster(movie model.Movie) model.Movie {
+	type TheMovieDB struct {
+		Page    int `json:"page"`
+		Results []struct {
+			Adult            bool    `json:"adult"`
+			BackdropPath     string  `json:"backdrop_path"`
+			GenreIds         []int   `json:"genre_ids"`
+			ID               int     `json:"id"`
+			OriginalLanguage string  `json:"original_language"`
+			OriginalTitle    string  `json:"original_title"`
+			Overview         string  `json:"overview"`
+			Popularity       float64 `json:"popularity"`
+			PosterPath       string  `json:"poster_path"`
+			ReleaseDate      string  `json:"release_date"`
+			Title            string  `json:"title"`
+			Video            bool    `json:"video"`
+			VoteAverage      float64 `json:"vote_average"`
+			VoteCount        int     `json:"vote_count"`
+		} `json:"results"`
+		TotalPages   int `json:"total_pages"`
+		TotalResults int `json:"total_results"`
+	}
+	client := &http.Client{}
+	domain := "https://api.themoviedb.org/3/search/movie?"
+	apiKey := "83cc89606f90461a781921ec33c57c57"
+	query := "&query="
+	url := fmt.Sprintf("%sapi_key=%s%s%s", domain, apiKey, query, url.QueryEscape(movie.Title))
+	fmt.Println("NEW REQUEST")
+	fmt.Println("NEW REQUEST")
+	fmt.Println("NEW REQUEST")
+
+	r, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Println(err)
+		return movie
+	}
+	fmt.Println("RETURN NEW REQUEST")
+	fmt.Println("RETURN NEW REQUEST")
+	fmt.Println("RETURN NEW REQUEST")
+	r.Header.Add("Accept", "application/json")
+	r.Header.Add("Content-Type", "application/json")
+	response, err := client.Do(r)
+	if err != nil {
+		log.Println(err)
+		return movie
+	}
+	defer response.Body.Close()
+
+	fmt.Println("RETURN RESPOSE")
+	fmt.Println("RETURN RESPOSE")
+	fmt.Println("RETURN RESPOSE")
+	fmt.Printf("response %#v", response)
+
+	// bodyBytes, err := io.ReadAll(response.Body)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return movie
+	// }
+	responseObject := &TheMovieDB{}
+	enc := json.NewDecoder(response.Body)
+	enc.Decode(responseObject)
+	fmt.Println("DECODE")
+	fmt.Println("DECODE")
+	fmt.Println("DECODE")
+
+	if len(responseObject.Results) > 0 {
+		movie.Poster = responseObject.Results[0].PosterPath
+		fmt.Println("Poster PATH: ", movie.Poster)
+	}
+
+	return movie
+}

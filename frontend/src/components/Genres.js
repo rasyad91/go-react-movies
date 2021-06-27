@@ -10,7 +10,7 @@ export default class Genres extends Component {
     }
 
     componentDidMount() {
-        fetch("http://localhost:4000/v1/genres")
+        fetch(`${process.env.REACT_APP_API_URL}/v1/genres`)
             .then(res => {
                 if (res.status !== 200) {
                     let err = Error;

@@ -8,7 +8,7 @@ export default class ShowOneMovie extends Component {
     };
 
     componentDidMount() {
-        fetch("http://localhost:4000/v1/movies/" + this.props.match.params.id)
+        fetch(`${process.env.REACT_APP_API_URL}/v1/movies/` + this.props.match.params.id)
             .then(res => {
                 if (res.status !== 200) {
                     let err = Error;
@@ -43,6 +43,11 @@ export default class ShowOneMovie extends Component {
         return (
             <Fragment>
                 <h2>Movie: {movie.title} ({movie.year})</h2>
+                {movie.poster !== "" && (
+                    <div>
+                        <img src={`https://image.tmdb.org/t/p/w200${movie.poster}`} alt="poster"></img>
+                    </div>
+                )}
                 <div className="float-start">
                     <small>Rating: {movie.mpaa_rating}</small>
                 </div>

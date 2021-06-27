@@ -37,7 +37,7 @@ export default class Graphql extends Component {
             headers: header,
             body: payload,
         }
-        fetch("http://localhost:4000/v1/graphql", requestOptions)
+        fetch(`${process.env.REACT_APP_API_URL}/v1/graphql`, requestOptions)
             .then(res => res.json())
             .then(data => {
                 let movieList = Object.values(data.data.list)
@@ -55,7 +55,11 @@ export default class Graphql extends Component {
         console.log("Value: handlechange: ", value)
         this.setState({searchTerm: value}, ()=> console.log("searchterm",this.state.searchTerm ))
         console.log("searchterm", this.state.searchTerm)
-        this.performSearch()
+        if (value.length > 2) {
+            this.performSearch()
+        } else {
+            this.setState({movies: []})
+        }
     }
 
     performSearch() {
@@ -79,7 +83,7 @@ export default class Graphql extends Component {
             headers: header,
             body: payload,
         }
-        fetch("http://localhost:4000/v1/graphql", requestOptions)
+        fetch(`${process.env.REACT_APP_API_URL}/v1/graphql`, requestOptions)
             .then(res => res.json())
             .then(data => {
                 let movieList = Object.values(data.data.search)

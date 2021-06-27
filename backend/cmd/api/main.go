@@ -33,9 +33,11 @@ func main() {
 	flag.StringVar(&cfg.Version, "version", "1.0.0", "Application version")
 	flag.StringVar(&cfg.DB.DSN, "db_dsn", "postgres://rasyad@localhost:5432/go_movies?sslmode=disable", "DB connection string")
 	flag.StringVar(&cfg.DB.Driver, "db_driver", "postgres", "DB Driver (postgres|mysql etc)")
-	flag.StringVar(&cfg.JWT.Secret, "jwt_secret", "2dce505d96a53c5768052ee90f3df2055657518dad489160df9913f66042e160", "jwt secret")
 
 	flag.Parse()
+
+	// read jwt secret from env
+	cfg.JWT.Secret = os.Getenv("GO_MOVIES_JWT")
 
 	cfg.Logger = log.New(os.Stdout, "INFO:", log.Ldate|log.Ltime)
 
