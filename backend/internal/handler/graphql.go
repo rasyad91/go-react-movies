@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/graphql-go/graphql"
 )
@@ -39,6 +41,9 @@ var movieType = graphql.NewObject(
 				Type: graphql.Int,
 			},
 			"mpaa_rating": &graphql.Field{
+				Type: graphql.String,
+			},
+			"poster": &graphql.Field{
 				Type: graphql.String,
 			},
 			"release_date": &graphql.Field{
@@ -82,9 +87,32 @@ var fields = graphql.Fields{
 	"list": &graphql.Field{
 		Type: graphql.NewList(movieType),
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			fmt.Println("list RESOLVE FUNC:")
 			return movies, nil
 		},
 		Description: "Get all movies",
+	},
+	"search": &graphql.Field{
+		Type: graphql.NewList(movieType),
+		Args: graphql.FieldConfigArgument{
+			"titleContains": &graphql.ArgumentConfig{
+				Type: graphql.String,
+			},
+		},
+		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			var list []model.Movie
+			search, ok := p.Args["titleContains"].(string)
+			if ok {
+				for _, v := range movies {
+					if strings.Contains(v.Title, search) {
+						log.Println("found one")
+						list = append(list, v)
+					}
+				}
+			}
+			return list, nil
+		},
+		Description: "Search movie by title",
 	},
 }
 
@@ -93,8 +121,6 @@ func (m *Repository) ListMovies(w http.ResponseWriter, r *http.Request) {
 
 	q, _ := io.ReadAll(r.Body)
 	query := string(q)
-
-	fmt.Println(query)
 
 	rootQuery := graphql.ObjectConfig{Name: "RootQuery", Fields: fields}
 	schemaConfig := graphql.SchemaConfig{Query: graphql.NewObject(rootQuery)}
@@ -107,11 +133,11 @@ func (m *Repository) ListMovies(w http.ResponseWriter, r *http.Request) {
 	params := graphql.Params{Schema: schema, RequestString: query}
 	result := graphql.Do(params)
 	if len(result.Errors) > 0 {
-		m.App.Logger.Println(err)
+		m.App.Logger.Println(result.Errors)
 		util.ErrorJSON(w, fmt.Errorf("fail to execute graphql operation: %#v", result.Errors))
 		return
 	}
-
+	fmt.Printf("%#v\n", result)
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "\t")
 	w.Header().Set("Content-Type", "application/json")

@@ -26,7 +26,7 @@ func (m *dbRepo) GetMovieByID(id int) (model.Movie, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `SELECT id, title, description, year, release_date, runtime, mpaa_rating, rating, created_at, updated_at
+	query := `SELECT id, title, description, year, release_date, runtime, mpaa_rating, rating, created_at, updated_at, coalesce(poster, '')
 			  FROM movies
 			  WHERE id = $1`
 
@@ -42,6 +42,7 @@ func (m *dbRepo) GetMovieByID(id int) (model.Movie, error) {
 		&movie.Rating,
 		&movie.CreatedAt,
 		&movie.UpdatedAt,
+		&movie.Poster,
 	); err != nil {
 		return model.Movie{}, err
 	}
@@ -59,7 +60,7 @@ func (m *dbRepo) GetAllMovies(genre ...int) ([]model.Movie, error) {
 		where = fmt.Sprintf("WHERE id in (SELECT movie_id FROM movies_genres WHERE genre_id = %d)", genre[0])
 	}
 
-	query := fmt.Sprintf(`SELECT id, title, description, year, release_date, runtime, mpaa_rating, rating, created_at, updated_at
+	query := fmt.Sprintf(`SELECT id, title, description, year, release_date, runtime, mpaa_rating, rating, created_at, updated_at, coalesce(poster, '')
 			  FROM movies
 			  %s 
 			  ORDER BY title`, where)
@@ -85,6 +86,7 @@ func (m *dbRepo) GetAllMovies(genre ...int) ([]model.Movie, error) {
 			&movie.Rating,
 			&movie.CreatedAt,
 			&movie.UpdatedAt,
+			&movie.Poster,
 		); err != nil {
 			return nil, err
 		}
@@ -169,7 +171,7 @@ func (m *dbRepo) InsertMovie(movie model.Movie) error {
 
 	query := `INSERT INTO 
 			  movies (title, description, year, release_date, runtime, rating, mpaa_rating, created_at, updated_at)
-			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 			  `
 	if _, err := m.ExecContext(ctx, query,
 		movie.Title,
@@ -181,6 +183,7 @@ func (m *dbRepo) InsertMovie(movie model.Movie) error {
 		movie.MPAARating,
 		time.Now(),
 		time.Now(),
+		movie.Poster,
 	); err != nil {
 		return err
 	}
@@ -201,7 +204,8 @@ func (m *dbRepo) UpdateMovie(movie model.Movie) error {
 					rating = $6, 
 					mpaa_rating = $7,
 					updated_at = $8
-			  WHERE id = $9
+					poster = $9
+			  WHERE id = $10
 			  `
 	if _, err := m.ExecContext(ctx, query,
 		movie.Title,
@@ -212,6 +216,8 @@ func (m *dbRepo) UpdateMovie(movie model.Movie) error {
 		movie.Rating,
 		movie.MPAARating,
 		time.Now(),
+		time.Now(),
+		movie.Poster,
 		movie.ID,
 	); err != nil {
 		return err

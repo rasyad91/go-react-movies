@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { HashRouter as Router, Switch, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom'
 
 import Admin from './components/Admin';
 import Genres from './components/Genres';
@@ -9,7 +9,8 @@ import ShowOneMovie from './components/ShowOneMovie';
 import MoviesByGenre from './components/MoviesByGenre';
 import EditMovie from './components/EditMovie';
 import Login from './components/Login';
-
+import Graphql from './components/Graphql';
+import GraphqlOneMovie from "./components/GraphqlOneMovie"
 
 
 
@@ -79,6 +80,9 @@ export default class App extends Component {
                   <li className="list-group-item">
                     <Link to="/genres">Genres</Link>
                   </li>
+                  <li className="list-group-item">
+                        <Link to="/graphql">Graphql</Link>
+                  </li>
                   {this.state.jwt !== "" && (
                     <Fragment>
                       <li className="list-group-item">
@@ -108,6 +112,12 @@ export default class App extends Component {
 
                 <Route path="/movies">
                   <Movies />
+                </Route>
+
+                <Route exact path="/graphql">
+                  <Graphql />
+                </Route>
+                <Route exact path="/graphql/:id" component={GraphqlOneMovie}>
                 </Route>
 
 

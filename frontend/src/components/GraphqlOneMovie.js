@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 
-export default class ShowOneMovie extends Component {
+export default class GraphqlOneMovie extends Component {
     state = {
         movie: {},
         isLoaded: false,
@@ -8,27 +8,33 @@ export default class ShowOneMovie extends Component {
     };
 
     componentDidMount() {
-        fetch("http://localhost:4000/v1/movies/" + this.props.match.params.id)
-            .then(res => {
-                if (res.status !== 200) {
-                    let err = Error;
-                    err.message = "Invalid response code: " + res.status;
-                    this.setState({ error: err });
-                }
-                return res.json();
+        const payload = `
+        {
+            movie(id:${this.props.match.params.id}) {
+                id
+                title
+                runtime
+                year
+                description
+                rating
+                mpaa_rating
+            }
+        }
+        `
+
+        const header = new Headers();
+        header.append("Content-Type", "application/json")
+        const requestOptions = {
+            method: "POST",
+            headers: header,
+            body: payload,
+        }
+        fetch("http://localhost:4000/v1/graphql", requestOptions)
+            .then(res => res.json())
+            .then(data => {
+                this.setState({movie: data.data.movie, isLoaded: true})
+                console.log(data)
             })
-            .then(data => (
-                this.setState({
-                    movie: data.movie,
-                    isLoaded: true
-                },
-                    error => {
-                        this.setState({
-                            isLoaded: true,
-                            error
-                        });
-                    })
-            ))
     }
 
     render() {

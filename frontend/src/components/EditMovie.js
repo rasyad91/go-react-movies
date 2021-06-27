@@ -90,12 +90,15 @@ export default class EditMovie extends Component {
     handleChange = (e) => {
         let value = e.target.value;
         let name = e.target.name;
+        console.log(name, " ", value)
         this.setState(prevState => ({
             movie: {
                 ...prevState.movie,
                 [name]: value
             }
         }))
+        console.log(this.state.movie)
+        
     }
 
     confirmDelete = e => {
@@ -118,7 +121,6 @@ export default class EditMovie extends Component {
                                 method: "GET",
                                 headers: requestHeader
                             } 
-                            
                         )
                             .then(res => res.json())
                             .then(data => {
